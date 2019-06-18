@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation 
+http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd 
+http://www.mulesoft.org/schema/mule/core 
+http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/ee/core 
+http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+
+    <error-handler name="global-error-handler">
+
+       <on-error-continue type="APIKIT:BAD_REQUEST" enableNotifications="false" logException="true">
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="5a5a8005-ee52-4378-b2d1-4ae8362c57be" variableName="errorRaised"/>
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="c0ab9cb9-da01-4724-adba-47d3b84f495a" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Bad Request",
+              errorDateTime: now(),
+              errorMessage: error.detailedDescription,
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+             </ee:transform>
+             <ee:transform doc:name="Set Response TransactionId" doc:id="78e23fab-d721-4503-b88d-fe47e8f428f0" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Log - Error Response" doc:id="6976a39a-3880-4cbc-a3d5-0d09777775fd" message="Log - Error Response - APIKIT - Resource Path: #[vars.requestPath] :  #[payload]"/>
+			<set-variable value='#["Log - Error Response - APIKIT" : payload]' doc:name="Set logMessage" doc:id="77a9df61-93ae-4c5e-a87b-175ca2639fe6" variableName="logMessage"/>
+			<flow-ref doc:name="ukef-mule-common-response-finalize-subflow" doc:id="d597b65c-c03e-4ff6-af75-08e2927bbd58" name="ukef-mule-common-response-finalize-subflow"/>
+			<ee:transform doc:name="Object to JSON" doc:id="41a98453-678a-4802-ac72-21b7c117f451" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+       </on-error-continue>
+       <on-error-continue type="APIKIT:NOT_FOUND" enableNotifications="false" logException="true">
+               <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="6455499b-38fa-4e85-84b7-cdb56a057c28" variableName="errorRaised"/>
+               <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="4b112270-9d61-400b-beb5-4b96728bde39" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Not Found",
+              errorDateTime: now(),
+              errorMessage: error.detailedDescription,
+              errorDescription: error.description ++ " Resource Not Found"
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="4f6cb285-7c36-4ea2-ac68-86e67532493f" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+                <logger level="ERROR" doc:name="Log - Error Response" doc:id="a657fd6c-abb1-425d-a3d2-d8215dd7cb70" message="Log - Error Response - APIKIT - Resource Path: #[vars.requestPath] :  #[payload]"/>
+       			<set-variable value='#["Log - Error Response - APIKIT" : payload]' doc:name="Set logMessage" doc:id="51f9305f-2452-4303-a478-28839289639b" variableName="logMessage"/>
+       			<flow-ref doc:name="ukef-mule-common-response-finalize-subflow" doc:id="73701a5b-3b12-4fc8-8576-f19085fa8722" name="ukef-mule-common-response-finalize-subflow"/>
+                <ee:transform doc:name="Object to JSON" doc:id="7997c8b9-62cd-4954-9395-66776558452b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+       </on-error-continue>
+    	   <on-error-continue type="APIKIT:METHOD_NOT_ALLOWED" enableNotifications="false" logException="true">
+                <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="787c1b50-c757-4550-bd34-5f8e16b023ed" variableName="errorRaised"/>
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="2deb3934-a66f-4b48-90ea-b26746c7ca14" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Method Not Allowed",
+              errorDateTime: now(),
+              errorMessage: error.detailedDescription,
+              errorDescription: error.description ++ " Method Not Allowed"
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="c6a8ddac-397d-432d-9d33-6933f0ccf71c" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+                <logger level="ERROR" doc:name="Log - Error Response" doc:id="08a75c3b-6224-42ab-a7a1-dba0d444be65" message="Log - Error Response - APIKIT - Resource Path: #[vars.requestPath]:  #[payload]"/>
+         	    <set-variable value='#["Log - Error Response - APIKIT" : payload]' doc:name="Set logMessage" doc:id="19effce4-206e-47b5-9d0f-884dd6f8006a" variableName="logMessage"/>
+         	    <flow-ref doc:name="ukef-mule-common-response-finalize-subflow" doc:id="7048f956-bd0f-4d24-ac10-4d5065b1d789" name="ukef-mule-common-response-finalize-subflow"/>
+                <ee:transform doc:name="Object to JSON" doc:id="c4430f71-34d3-4cbc-a3ff-676978b689e3" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+         </on-error-continue>
+	   <on-error-continue type="APIKIT:UNSUPPORTED_MEDIA_TYPE" enableNotifications="false" logException="true">
+                <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="8925a6e4-a6a1-4d58-8483-55a8e817818c" variableName="errorRaised"/>
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="737037ea-c87a-4334-9539-40c72edafe38" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Unsupported Media Type",
+              errorDateTime: now(),
+              errorMessage: error.detailedDescription,
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="cb448784-a443-4598-959a-99f78c5b24fe" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+                <logger level="ERROR" doc:name="Log - Error Response" doc:id="c2d522e8-11c5-4623-8113-d37157d683c0" message="Log - Error Response - APIKIT - Resource Path: #[vars.requestPath] :  #[payload]"/>
+                <set-variable value='#["Log - Error Response - APIKIT" : payload]' doc:name="Set logMessage" doc:id="ca074c4c-16ab-4c45-93bc-3d0878a57cd1" variableName="logMessage"/>
+                <flow-ref doc:name="ukef-mule-common-response-finalize-subflow" doc:id="ad25b676-b3f8-4f22-859b-985799ffdb6a" name="ukef-mule-common-response-finalize-subflow"/>
+                <ee:transform doc:name="Object to JSON" doc:id="04938e76-1319-4099-83e2-580a78e54d9e" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+          <on-error-continue enableNotifications="true" logException="true" when='#[error.errorType.namespace == "DB" and error.errorType.identifier == "QUERY_EXECUTION" ]'>
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="465472be-4e76-4529-a952-102c0a0ff725" variableName="errorRaised"/>
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="8ddf8708-5c75-4919-b7cc-9580d3fdf5ae" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Bad Request",
+              errorDateTime: now(),
+              errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " " ++ "ERROR",
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="6872e4b2-8f4c-422c-8cb7-4df58eff527d" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+               <logger level="ERROR" doc:name="Log - Error Response" doc:id="49e05f98-9f88-4b6c-becf-c282fa623c28" message="Log - Error Response - Database Query Execution Failed - Resource Path: #[vars.requestPath]:  #[payload]"/>
+               <set-variable value='#["Log - Error Response - Bad Request " : payload]' doc:name="Set logMessage" doc:id="7c6052f0-4dc2-4aba-b590-bafdae227496" variableName="logMessage"/>
+               <ee:transform doc:name="Object to JSON" doc:id="45293e47-7d03-48fd-86b9-0dcc37e3c921" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+          <on-error-continue enableNotifications="true" logException="true" when='#[error.errorType.namespace == "DB" and error.errorType.identifier == "CONNECTIVITY" and (error.description contains "Invalid")]'>
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="44b39f7e-1e27-4458-b413-dc02801e60a5" variableName="errorRaised"/>
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="d7d954cf-7c48-405f-a810-53ea62bdb8ac" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Unauthorized",
+              errorDateTime: now(),
+              errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " " ++ "ERROR",
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[401]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="4e8e9584-faf6-429c-a9a8-f3548d9aece8" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+               <logger level="ERROR" doc:name="Log - Error Response" doc:id="bafbe7f2-e14e-4687-9b1d-b8962b2104f3" message="Log - Error Response - Database Access Not Authorized - Resource Path: #[vars.requestPath]:  #[payload]"/>
+               <set-variable value='#["Log - Error Response - Database Access Not Authorized " : payload]' doc:name="Set logMessage" doc:id="176b6b7a-41c9-4d95-8f1b-553fadaffc12" variableName="logMessage"/>
+               <ee:transform doc:name="Object to JSON" doc:id="12ae73e9-98f3-4e06-8c99-1addea6627e6" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+          <on-error-continue enableNotifications="true" logException="true" when='#[error.errorType.namespace == "DB" and error.errorType.identifier == "CONNECTIVITY" and (error.description contains "Connection has timed out") ]'>
+			  <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="af3c5cf6-4025-48d8-b21a-3e36949e5d20" variableName="errorRaised"/>
+			  <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="b5e5ee65-9fbd-484a-831a-6f681859a473" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+			errorCode: "Forbidden",
+			errorDateTime: now(),
+			errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " " ++ "ERROR",
+			errorDescription: error.description
+	      }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[403]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="f02e1fe3-3794-42bc-86e4-6d2e7022dc91" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+                <logger level="ERROR" doc:name="Log - Error Response" doc:id="0ecf1359-ca00-48b6-bcab-52d1d29ca0ac" message="Log - Error Response - Database Access Forbidden - Resource Path: #[vars.requestPath]:  #[payload]"/>
+          	    <set-variable value='#["Log - Error Response - Database Access Forbidden " : payload]' doc:name="Set logMessage" doc:id="d074c1b2-4fb0-477b-87fa-dc48119b35c8" variableName="logMessage"/>
+                <ee:transform doc:name="Object to JSON" doc:id="9bef4e44-2061-49be-84e7-54639dfaafba" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+          <on-error-continue type="GLOBAL:PRE_CONDITION_FAILED" enableNotifications="true" logException="true" >
+			  <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="a679e083-6233-4e73-9c6d-111b0829bbc5" variableName="errorRaised"/>
+			  <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="6e4a603b-4e70-491b-9506-ae78d15e4569" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+			errorCode: "Precondition Failed",
+			errorDateTime: now(),
+			errorMessage: error.errorType.identifier ++ " " ++ "ERROR",
+			errorDescription: error.description
+	      }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[412]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <ee:transform doc:name="Set Response TransactionId" doc:id="c4f4a733-865b-4860-9cda-991beb8ad8b3" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+                <logger level="ERROR" doc:name="Log - Error Response" doc:id="2ca7dbcf-92a7-483d-8ac5-8df3e917a5d0" message="Log - Error Response - Pre Condition Failed - Resource Path: #[vars.requestPath]:  #[payload]"/>
+          	    <set-variable value='#["Log - Error Response - Pre Condition Failed " : payload]' doc:name="Set logMessage" doc:id="d9c1fd01-b994-43fa-8d0d-5976442ee0f2" variableName="logMessage"/>
+                <ee:transform doc:name="Object to JSON" doc:id="e88c951e-5c53-41e5-9067-a9fea417f823" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+          <on-error-continue type="ANY" enableNotifications="false" logException="true">
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="9e786264-ea5b-4fcf-90f2-cffb54fadb81" variableName="errorRaised"/>
+			<logger level="INFO" doc:name="Logger" doc:id="dbd7bded-6e38-4a69-ae6d-d524ad5398f9" message="ERROR OBJECT: #[error]"/>
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="fa32863b-c2f3-4f20-a94d-48d1ffaaa1df" doc:name="Error Response">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Internal Server Error",
+              errorDateTime: now(),
+              errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " ERROR",
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[500]]></ee:set-variable>
+                    </ee:variables>
+            </ee:transform>
+            <ee:transform doc:name="Set Response TransactionId" doc:id="7e2c9c1f-0c6b-41ec-8cfc-c346d77540fc" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+            <logger level="ERROR" doc:name="Log - Error Response" doc:id="f6cce95d-c2e4-4542-bc0c-22bdf4671921" message="Log - Error Response - ANY - Resource Path: #[vars.requestPath]:  #[payload]"/>
+            <set-variable value='#["Log - Error Response - ANY " : payload]' doc:name="Set logMessage" doc:id="34783a4b-d54c-4f81-a7d2-523c8a63d7d0" variableName="logMessage"/>
+            <ee:transform doc:name="Object to JSON" doc:id="49e32fcd-7aee-4d5e-9ff6-b12083a53106" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+          </on-error-continue>
+
+	</error-handler>
+
+</mule>

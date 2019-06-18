@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<sub-flow name="ukef-mule-common-request-initiation-subflow">
+
+		<ee:transform doc:name="Request Initiation" doc:id="6a19258d-5a2a-4a68-b0b4-d429df83b1bf" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="requestInitiation" ><![CDATA[%dw 2.0
+
+output application/java
+---
+{
+
+transactionId: if (message.attributes.headers.'x-transactionId' != null) message.attributes.headers.'x-transactionId'  else uuid(),
+
+resource: if (message.attributes.'relativePath' != null) message.attributes.'relativePath' else null,
+
+processingStage: "IN_PROGRESS" as Enum {class: "org.ukef.mule.ProcessingStageType"},
+
+transactionStatus: "IN_PROGRESS" as Enum {class: "org.ukef.mule.TransactionStatusType"},
+
+integrationPattern: if(message.attributes.'scheme' != null) "HTTPS" as Enum {class: "org.ukef.mule.IntegrationPatternType"}
+                      else if(vars.batchJobInstanceId != null) "BATCH" as Enum {class: "org.ukef.mule.IntegrationPatternType"}
+                           else if(vars.connectorType == "FILE") "FILE" as Enum {class: "org.ukef.mule.IntegrationPatternType"}
+                                else if(vars.connectorType == "FTP") "FTP" as Enum {class: "org.ukef.mule.IntegrationPatternType"}
+                                     else if(vars.connectorType == "SFTP") "SFTP" as Enum {class: "org.ukef.mule.IntegrationPatternType"}
+                                          else "MESSAGING"
+
+
+}
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[vars.requestInitiation.processingStage]" doc:name="Set processingStage" doc:id="2f2c25fa-0008-455f-aaef-4208e83347a4" variableName="processingStage"/>
+		<set-variable value="#[vars.requestInitiation.transactionStatus]" doc:name="Set transactionStatus" doc:id="67ec34de-1952-42d5-b2c2-cde56b3c9f95" variableName="transactionStatus"/>
+		<set-variable value="#[message.attributes.requestPath]" doc:name="Set requestPath" doc:id="4a0368e0-fb69-4047-a769-9df15df8f543" variableName="requestPath"/>
+		<flow-ref doc:name="ukef-mule-common-audit-logger-subflow" doc:id="c7257bd6-8200-48b9-a11f-a84694086d60" name="ukef-mule-common-audit-logger-subflow"/>
+
+	</sub-flow>
+	<sub-flow name="ukef-mule-common-response-finalize-subflow">
+		<choice doc:name="Choice">
+			<when
+				expression='#[(vars.errorRaised == true)]'>
+				<ee:transform doc:name="Reset transactionStatus - Failure" doc:id="fd7d330d-e807-4ff0-a251-26bc2b558d71" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="transactionStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+"FAILURE" as Enum {class: "org.ukef.mule.TransactionStatusType"}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Reset transactionStatus - Success" doc:id="14464f70-1a08-48d1-bc14-186d9ed0d3c7" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="transactionStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+"SUCCESS" as Enum {class: "org.ukef.mule.TransactionStatusType"}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		
+		<ee:transform doc:name="Reset processingStage - Completed" doc:id="ea43a6a2-4f7b-4133-b06d-d8a3295842ef" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="processingStage" ><![CDATA[%dw 2.0
+output application/java
+---
+"COMPLETED" as Enum {class: "org.ukef.mule.ProcessingStageType"}
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref name="ukef-mule-common-audit-logger-subflow"
+			doc:name="ukef-mule-common-audit-logger-subflow" />
+	</sub-flow>
+</mule>

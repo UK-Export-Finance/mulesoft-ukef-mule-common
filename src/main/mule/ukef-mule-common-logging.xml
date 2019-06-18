@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <sub-flow name="ukef-mule-common-audit-logger-subflow">
+        <ee:transform doc:name="common Log Message" doc:id="487063fb-6524-4a61-a31c-d6c8271500c9" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="commonLogMsg" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	 // This is needed for E2E transaction tracing - it is going to be very useful
+	 (transactionId: vars.requestInitiation.transactionId default null) if (vars.requestInitiation.transactionId != null),
+
+	 // This will help to track which client is actually making this call
+
+	// (clientId: vars.requestInitiation.clientId) if(vars.requestInitiation.clientId != null),
+
+	 // This is the name of the application
+	 application: app.name,
+
+	 (message: vars.logMessage) if (vars.logMessage != null),
+
+	 dateTimeStamp: now(),
+
+	 // From what type of pattern the log is being triggered.
+	 //     HTTP - The logging is from a Synchronous call - which is almost all the time an API.
+	 //     BATCH - The call is from a batch context
+	 //     MESSAGING - The logging request is from a messaging context
+	 (integrationPattern: vars.requestInitiation.integrationPattern) if (vars.requestInitiation.integrationPattern != null),
+
+	 // Which Rest resource it is working with. Not required for non-api transactions
+	 (uri: vars.requestInitiation.resource) if (vars.requestInitiation.resource != null),
+
+	 (httpMethod: message.attributes.'Method') if (message.attributes.'Method' != null),
+
+	 // Current stage of the processing
+	 (processingStage: vars.processingStage) if (vars.processingStage != null),
+
+	 // Current status of the transaction
+	 (transactionStatus: vars.transactionStatus) if (vars.transactionStatus != null)
+
+ }]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log commonLogMsg" doc:id="6b5e108d-f8d3-4f1c-85b1-7f92e44fd40a" message="Log - #[vars.commonLogMsg]"/>
+		<remove-variable doc:name="Remove commonLogMsg" doc:id="975ed05a-dd72-477c-8802-9d0a7d8b679f" variableName="commonLogMsg"/>
+    </sub-flow>
+</mule>
