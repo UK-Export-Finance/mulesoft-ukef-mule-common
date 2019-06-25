@@ -16,8 +16,7 @@ http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core 
 http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 
-
-    <error-handler name="global-error-handler">
+	<error-handler name="global-error-handler">
 
        <on-error-continue type="APIKIT:BAD_REQUEST" enableNotifications="false" logException="true">
 			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="5a5a8005-ee52-4378-b2d1-4ae8362c57be" variableName="errorRaised"/>
@@ -324,7 +323,7 @@ payload]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
           </on-error-continue>
-          <on-error-continue type="GLOBAL:PRE_CONDITION_FAILED" enableNotifications="true" logException="true" >
+          <on-error-continue type="APIVALIDATION:PRE_CONDITION_FAILED" enableNotifications="true" logException="true" >
 			  <set-variable value="#[true]" doc:name="Set errorRaised" doc:id="a679e083-6233-4e73-9c6d-111b0829bbc5" variableName="errorRaised"/>
 			  <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="6e4a603b-4e70-491b-9506-ae78d15e4569" doc:name="Error Response">
                     <ee:message>
@@ -413,5 +412,11 @@ payload]]></ee:set-payload>
           </on-error-continue>
 
 	</error-handler>
+	
+	<!--  Dummy flow to define the custom error type, APIVALIDATION:PRE_CONDITION_FAILED -->
+	
+    <flow name="dummy-flow-to-declare-custom-errors" doc:id="b21fd7fe-4c7f-495e-8656-e593b4efb21d" >
+		<raise-error doc:name="Raise error" doc:id="a4c7ca43-f0a4-4214-ba2f-fceb063e2d84" type="APIVALIDATION:PRE_CONDITION_FAILED"/>
+	</flow>
 
 </mule>
