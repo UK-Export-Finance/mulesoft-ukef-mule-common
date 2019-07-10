@@ -366,9 +366,93 @@ payload]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
           </on-error-continue>
-          <on-error-continue type="ANY" enableNotifications="false" logException="true">
-			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="9e786264-ea5b-4fcf-90f2-cffb54fadb81" variableName="errorRaised"/>
-			<logger level="INFO" doc:name="Logger" doc:id="dbd7bded-6e38-4a69-ae6d-d524ad5398f9" message="ERROR OBJECT: #[error]"/>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue SFTP" doc:id="33bbd82d-0582-4db7-9ff5-e44fb1ba0e47" when='#[error.errorType.namespace == "SFTP" and error.errorType.identifier == "ILLEGAL_PATH" ]'>
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="4c552f1a-a438-452e-a9f2-a5f842ab1628" variableName="errorRaised" />
+			<ee:transform doc:name="Error Response" doc:id="8f5c0e35-0e18-4149-bc35-99088ae2406a" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Not Found",
+              errorDateTime: now(),
+              errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " " ++ "ERROR",
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="Set Response TransactionId" doc:id="c4eb8fe4-909b-45ca-917e-8f393dfc7708" >
+				<ee:message />
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Log - Error Response" doc:id="c4795322-a396-4c0f-963f-12ef403367ea" message="Log - Error Response - Database Query Execution Failed - Resource Path: #[vars.requestPath]:  #[payload]" />
+			<set-variable value='#["Log - Error Response - Not Found " : payload]' doc:name="Set logMessage" doc:id="456c4edc-eaa9-489d-b96c-5fb7108f2ce1" variableName="logMessage" />
+			<ee:transform doc:name="Object to JSON" doc:id="1d0c9fa9-06f4-4e67-9ebb-5c276265e562" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue SFTP" doc:id="8ee3385e-cc79-46df-bba6-a04b461c61c1" when='#[error.errorType.namespace == "SFTP" and error.errorType.identifier == "CONNECTIVITY" ]' >
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="2ae7c0e9-869e-4399-9ce1-e1479080e6ef" variableName="errorRaised" />
+			<ee:transform doc:name="Error Response" doc:id="575b96a2-fc24-41a0-8df4-023c7e2e5c4c" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+  error: {
+              errorCode: "Unauthorized",
+              errorDateTime: now(),
+              errorMessage: error.errorType.namespace ++ " " ++ error.errorType.identifier ++ " " ++ "ERROR",
+              errorDescription: error.description
+           }
+ }]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[401]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="Set Response TransactionId" doc:id="0e26cfb9-8fa0-4b12-8111-1bb63396af47" >
+				<ee:message />
+				<ee:variables >
+					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+output application/json
+---
+{	
+	"x-transactionId" : vars.requestInitiation.transactionId
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Log - Error Response" doc:id="ebd39565-fb38-4d11-9f79-8999420a6718" message="Log - Error Response - Database Query Execution Failed - Resource Path: #[vars.requestPath]:  #[payload]" />
+			<set-variable value='#["Log - Error Response - Unauthorized " : payload]' doc:name="Set logMessage" doc:id="cfd70a7a-05df-4d11-ab41-e1e84a461e5b" variableName="logMessage" />
+			<ee:transform doc:name="Object to JSON" doc:id="cd0884ad-bdc6-4773-98a9-a9ebd9848824" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue type="ANY" enableNotifications="false" logException="true">
+			<set-variable value="#[true]" doc:name="Set errorRaised" doc:id="9e786264-ea5b-4fcf-90f2-cffb54fadb81" variableName="errorRaised" />
+			<logger level="INFO" doc:name="Logger" doc:id="dbd7bded-6e38-4a69-ae6d-d524ad5398f9" message="ERROR OBJECT: #[error]" />
 			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="fa32863b-c2f3-4f20-a94d-48d1ffaaa1df" doc:name="Error Response">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
@@ -387,11 +471,11 @@ output application/java
                         <ee:set-variable variableName="httpStatus"><![CDATA[500]]></ee:set-variable>
                     </ee:variables>
             </ee:transform>
-            <ee:transform doc:name="Set Response TransactionId" doc:id="7e2c9c1f-0c6b-41ec-8cfc-c346d77540fc" >
-				<ee:message >
+            <ee:transform doc:name="Set Response TransactionId" doc:id="7e2c9c1f-0c6b-41ec-8cfc-c346d77540fc">
+				<ee:message>
 				</ee:message>
-				<ee:variables >
-					<ee:set-variable variableName="outboundHeaders" ><![CDATA[%dw 2.0
+				<ee:variables>
+					<ee:set-variable variableName="outboundHeaders"><![CDATA[%dw 2.0
 output application/json
 ---
 {	
@@ -399,17 +483,18 @@ output application/json
 }]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
-            <logger level="ERROR" doc:name="Log - Error Response" doc:id="f6cce95d-c2e4-4542-bc0c-22bdf4671921" message="Log - Error Response - ANY - Resource Path: #[vars.requestPath]:  #[payload]"/>
-            <set-variable value='#["Log - Error Response - ANY " : payload]' doc:name="Set logMessage" doc:id="34783a4b-d54c-4f81-a7d2-523c8a63d7d0" variableName="logMessage"/>
-            <ee:transform doc:name="Object to JSON" doc:id="49e32fcd-7aee-4d5e-9ff6-b12083a53106" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
+            <logger level="ERROR" doc:name="Log - Error Response" doc:id="f6cce95d-c2e4-4542-bc0c-22bdf4671921" message="Log - Error Response - ANY - Resource Path: #[vars.requestPath]:  #[payload]" />
+            <set-variable value='#["Log - Error Response - ANY " : payload]' doc:name="Set logMessage" doc:id="34783a4b-d54c-4f81-a7d2-523c8a63d7d0" variableName="logMessage" />
+            <ee:transform doc:name="Object to JSON" doc:id="49e32fcd-7aee-4d5e-9ff6-b12083a53106">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
           </on-error-continue>
+		
 
 	</error-handler>
 	
