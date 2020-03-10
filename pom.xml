@@ -25,7 +25,7 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					 <classifier>mule-application</classifier>
+					 <classifier>mule-plugin</classifier>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -59,23 +59,17 @@
             <url>https://maven.anypoint.mulesoft.com/api/v1/maven</url>
             <layout>default</layout>
         </repository>
-        <repository>
-            <id>mulesoft-releases</id>
-            <name>MuleSoft Releases Repository</name>
-            <url>https://repository.mulesoft.org/releases/</url>
-            <layout>default</layout>
-        </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>mulesoft-releases</id>
-            <name>mulesoft release repository</name>
-            <layout>default</layout>
-            <url>https://repository.mulesoft.org/releases/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
+    <distributionManagement>
+	    <repository>
+	        <id>central</id>
+	        <name>ukexportfinance-artifactory-primary-0-releases</name>
+	        <url>https://ukexportfinance.jfrog.io/artifactory/mule-dependencies-local</url>
+	    </repository>
+	    <snapshotRepository>
+	        <id>snapshots</id>
+	        <name>ukexportfinance-artifactory-primary-0-snapshots</name>
+	        <url>https://ukexportfinance.jfrog.io/artifactory/mule-dependencies-local</url>
+	    </snapshotRepository>
+	</distributionManagement>
 </project>
