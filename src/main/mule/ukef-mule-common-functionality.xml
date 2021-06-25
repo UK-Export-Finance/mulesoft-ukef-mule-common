@@ -43,9 +43,11 @@ integrationPattern: if(message.attributes.'scheme' != null) "HTTPS" as Enum {cla
 		<set-variable value="#[vars.requestInitiation.processingStage]" doc:name="Set processingStage" doc:id="2f2c25fa-0008-455f-aaef-4208e83347a4" variableName="processingStage"/>
 		<set-variable value="#[vars.requestInitiation.transactionStatus]" doc:name="Set transactionStatus" doc:id="67ec34de-1952-42d5-b2c2-cde56b3c9f95" variableName="transactionStatus"/>
 		<set-variable value="#[message.attributes.requestPath]" doc:name="Set requestPath" doc:id="4a0368e0-fb69-4047-a769-9df15df8f543" variableName="requestPath"/>
+		<set-variable value="#['Start ' ++ (if (message.attributes.'Method' != null) message.attributes.'Method' else '')  ++ ' ' ++(if (message.attributes.'relativePath' != null) message.attributes.'relativePath' else '')]" doc:name="Set Start message" doc:id="ca78de25-c492-44d8-86da-aa2fec32acb5" variableName="logMessage" />
 		<flow-ref doc:name="ukef-mule-common-audit-logger-subflow" doc:id="c7257bd6-8200-48b9-a11f-a84694086d60" name="ukef-mule-common-audit-logger-subflow"/>
 
-	</sub-flow>
+	
+</sub-flow>
 	<sub-flow name="ukef-mule-common-response-finalize-subflow">
 		<choice doc:name="Choice">
 			<when
@@ -87,7 +89,9 @@ output application/java
 ]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
+		<set-variable doc:name="Set logMessage" doc:id="21bed225-47e4-4c6a-99bc-2fda9d1b1d45" variableName="logMessage" doc:description="We don't have want to repeat previous message" value="End Of Request"/>
 		<flow-ref name="ukef-mule-common-audit-logger-subflow"
 			doc:name="ukef-mule-common-audit-logger-subflow" />
-	</sub-flow>
+	
+</sub-flow>
 </mule>
