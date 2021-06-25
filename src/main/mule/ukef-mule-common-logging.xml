@@ -56,6 +56,5 @@ output application/json
 		</ee:transform>
 		<logger level="INFO" doc:name="Log commonLogMsg" doc:id="6b5e108d-f8d3-4f1c-85b1-7f92e44fd40a" message="Log - #[vars.commonLogMsg]"/>
 		<remove-variable doc:name="Remove commonLogMsg" doc:id="975ed05a-dd72-477c-8802-9d0a7d8b679f" variableName="commonLogMsg"/>
-                <remove-variable doc:name="Remove logMessage" doc:id="83e97961-af0e-4142-b223-3fdf9dc536d1" variableName="logMessage" />
     </sub-flow>
 </mule>
