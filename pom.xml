@@ -4,7 +4,7 @@
 
 	<groupId>org.ukef</groupId>
 	<artifactId>ukef-mule-common</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.3</version>
 	<packaging>mule-application</packaging>
 
 	<name>ukef-mule-common</name>
@@ -12,9 +12,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<app.runtime>4.3.0</app.runtime>
-		<mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
+		<app.runtime>4.3.0-20210823</app.runtime>
+		<mule.maven.plugin.version>3.5.4</mule.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -59,17 +58,20 @@
 			<url>https://maven.anypoint.mulesoft.com/api/v1/maven</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>Anypoint Exchange V3</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
-			<id>central</id>
-			<name>ukexportfinance-artifactory-primary-0-releases</name>
-			<url>https://ukexportfinance.jfrog.io/artifactory/mule-dependencies-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>ukexportfinance-artifactory-primary-0-snapshots</name>
-			<url>https://ukexportfinance.jfrog.io/artifactory/mule-dependencies-local</url>
-		</snapshotRepository>
+          <id>github-mulesoft-ukef-mule-common</id>
+          <url>https://maven.pkg.github.com/UK-Export-Finance/mulesoft-ukef-mule-common</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
 	</distributionManagement>
 </project>
