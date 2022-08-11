@@ -10,11 +10,11 @@ on:
       ENVIRONMENT_CLOUDHUB:
         required: true
         type: string
-        description: Cloudhub Environment Value: DEV, QA, STG, PROD
+        description: Cloudhub Environment Value DEV, QA, STG, PROD
       ENVIRONMENT_FOR_MULE_CONFIG:
         required: true
         type: string
-        description: Config Properties Environment Value: dev, qa, stg, prd
+        description: Config Properties Environment Value - dev, qa, stg, prd
       APPLICATION_NAME:
         required: true
         type: string
