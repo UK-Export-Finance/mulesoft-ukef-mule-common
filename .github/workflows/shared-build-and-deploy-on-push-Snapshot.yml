@@ -125,8 +125,8 @@ jobs:
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
         ENVIRONMENT_FOR_MULE_CONFIG: ${{ inputs.ENVIRONMENT_FOR_MULE_CONFIG }}
-        ENVIRONMENT_CLOUDHUB: ${{ input.ENVIRONMENT_CLOUDHUB }}
-        APPLICATION_NAME: ${{ input.APPLICATION_NAME }}
+        ENVIRONMENT_CLOUDHUB: ${{ inputs.ENVIRONMENT_CLOUDHUB }}
+        APPLICATION_NAME: ${{ inputs.APPLICATION_NAME }}
       run: |
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \

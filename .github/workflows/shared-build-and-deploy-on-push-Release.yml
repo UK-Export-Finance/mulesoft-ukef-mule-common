@@ -118,7 +118,6 @@ jobs:
       with:
         name: artifacts
 
-
     - name: Deploy to QA,STG or PROD
       env:
         USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
@@ -127,7 +126,8 @@ jobs:
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
         ENVIRONMENT_FOR_MULE_CONFIG: ${{ inputs.ENVIRONMENT_FOR_MULE_CONFIG }}
-        ENVIRONMENT_CLOUDHUB: ${{ input.ENVIRONMENT_CLOUDHUB }}
+        ENVIRONMENT_CLOUDHUB: ${{ inputs.ENVIRONMENT_CLOUDHUB }}
+        APPLICATION_NAME: ${{ inputs.APPLICATION_NAME }}
       run: |
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \
@@ -141,3 +141,8 @@ jobs:
          -DdecryptionKey="$DECRYPTION_KEY" \
          -Dapplicationname="$APPLICATION_NAME" \
          -DskipTests
+
+    # delete-artifact
+    - uses: geekyeggo/delete-artifact@v1
+      with:
+        name: artifacts
