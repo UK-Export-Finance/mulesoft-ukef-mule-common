@@ -7,9 +7,18 @@ name: shared - Build and Deploy Release
 on:
   workflow_call:
     inputs:
-      ENVIRONMENT:
+      ENVIRONMENT_CLOUDHUB:
         required: true
         type: string
+        description: Cloudhub Environment Value: DEV, QA, STG, PROD
+      ENVIRONMENT_FOR_MULE_CONFIG:
+        required: true
+        type: string
+        description: Config Properties Environment Value: dev, qa, stg, prd
+      APPLICATION_NAME:
+        required: true
+        type: string
+        description: Application name in Cloudhub runtime, will be used for url. Name should be similar to prod-ukef-bbg-pa-v1
           
     secrets:
       MULE_NEXUS_USERNAME:
@@ -32,8 +41,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     
     steps:
     
@@ -73,7 +80,7 @@ jobs:
       run: mvn help:effective-settings
       
     - name: Change package version, remove -SNAPSHOT
-      run: sed 's/-SNAPSHOT//g' pom.xml
+      run: sed -i 's/-SNAPSHOT//g' pom.xml
     
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -90,12 +97,11 @@ jobs:
       with:
           name: artifacts
           path: target/*.jar
+          retention-days: 3
         
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    #env:
-    #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:    
     
@@ -111,15 +117,8 @@ jobs:
     - uses: actions/download-artifact@master
       with:
         name: artifacts
-    
-    - name: Uppercase env name
-      id: uppercase-env
-      env:
-        ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
-      run: |
-        echo "::set-output name=ENVIRONMENT_UPPER::$(echo ${ENVIRONMENT^^})"
-          
-    
+
+
     - name: Deploy to QA,STG or PROD
       env:
         USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
@@ -127,8 +126,8 @@ jobs:
         DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
-        ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
-        ENVIRONMENT_UPPER: ${{ steps.uppercase-env.outputs.ENVIRONMENT_UPPER }}
+        ENVIRONMENT_FOR_MULE_CONFIG: ${{ inputs.ENVIRONMENT_FOR_MULE_CONFIG }}
+        ENVIRONMENT_CLOUDHUB: ${{ input.ENVIRONMENT_CLOUDHUB }}
       run: |
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \
@@ -137,8 +136,8 @@ jobs:
          -Danypoint.password="$PASSWORD" \
          -Danypointplatformclientid="$ANYPOINT_PLATFORM_CLIENT_ID" \
          -Danypointplatformclientsecret="$ANYPOINT_PLATFORM_CLIENT_PASSWORD" \
-         -Denv=$ENVIRONMENT \
-         -Ddeploymentenvironment=$ENVIRONMENT_UPPER \
-         -Denvironment=$ENVIRONMENT \
+         -Ddeploymentenvironment=$ENVIRONMENT_CLOUDHUB \
+         -Denvironment=$ENVIRONMENT_FOR_MULE_CONFIG \
          -DdecryptionKey="$DECRYPTION_KEY" \
+         -Dapplicationname="$APPLICATION_NAME" \
          -DskipTests
