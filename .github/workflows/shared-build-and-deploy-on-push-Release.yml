@@ -41,7 +41,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+        
     steps:
     
     - uses: actions/checkout@v2
@@ -76,8 +76,8 @@ jobs:
            "password": "${{ secrets.GH_PAT_FOR_READ_PACKAGES }}"
           }]
     
-    - name: Print effective-settings (optional)
-      run: mvn help:effective-settings
+    #- name: Print effective-settings (optional)
+    #  run: mvn help:effective-settings
       
     - name: Change package version, remove -SNAPSHOT
       run: sed -i 's/-SNAPSHOT//g' pom.xml
@@ -117,6 +117,24 @@ jobs:
     - uses: actions/download-artifact@master
       with:
         name: artifacts
+    
+    - name: Add repo credentials
+      uses: s4u/maven-settings-action@v2.4.0
+      with:
+        servers: |
+          [{
+           "id": "mule-enterprise",
+           "username": "${{ secrets.MULE_NEXUS_USERNAME }}",
+           "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
+          },{
+           "id": "anypoint-exchange-v3",
+           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
+           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+          },{
+           "id": "github-mulesoft-ukef-mule-common",
+           "username": "avaitonis",
+           "password": "${{ secrets.GH_PAT_FOR_READ_PACKAGES }}"
+          }]
 
     - name: Deploy to QA,STG or PROD
       env:
@@ -142,7 +160,7 @@ jobs:
          -Dapplicationname="$APPLICATION_NAME" \
          -DskipTests
 
-    # delete-artifact
+    # delete-artifact for now, our storage is limited
     - uses: geekyeggo/delete-artifact@v1
       with:
         name: artifacts

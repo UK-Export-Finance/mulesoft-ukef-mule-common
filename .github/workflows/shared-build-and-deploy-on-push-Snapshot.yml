@@ -41,8 +41,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     
     steps:
     
@@ -117,6 +115,24 @@ jobs:
       with:
         name: artifacts
     
+    - name: Add repo credentials
+      uses: s4u/maven-settings-action@v2.4.0
+      with:
+        servers: |
+          [{
+           "id": "mule-enterprise",
+           "username": "${{ secrets.MULE_NEXUS_USERNAME }}",
+           "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
+          },{
+           "id": "anypoint-exchange-v3",
+           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
+           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+          },{
+           "id": "github-mulesoft-ukef-mule-common",
+           "username": "avaitonis",
+           "password": "${{ secrets.GH_PAT_FOR_READ_PACKAGES }}"
+          }]
+    
     - name: Deploy to DEV
       env:
         USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
@@ -142,7 +158,7 @@ jobs:
          -Dapplicationname="$APPLICATION_NAME" \
          -DskipTests
     
-    # delete-artifact
+    # delete-artifact for now, our storage is limited
     - uses: geekyeggo/delete-artifact@v1
       with:
         name: artifacts
