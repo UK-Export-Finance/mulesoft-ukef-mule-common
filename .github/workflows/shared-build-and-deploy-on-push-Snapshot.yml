@@ -80,7 +80,10 @@ jobs:
     #  run: mvn help:effective-settings
     
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      env:
+        DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
+      #run: mvn -B package --file pom.xml
+      run: mvn -B package -DdecryptionKey=$DECRYPTION_KEY -DskipMunitTests --file pom.xml
     
     - name: Stamp artifact file name with commit hash
       run: |
@@ -156,7 +159,8 @@ jobs:
          -Denvironment=$ENVIRONMENT_FOR_MULE_CONFIG \
          -DdecryptionKey="$DECRYPTION_KEY" \
          -Dapplicationname="$APPLICATION_NAME" \
-         -DskipTests
+         -DskipTests \
+         -DskipMunitTests
     
     # delete-artifact for now, our storage is limited
     - uses: geekyeggo/delete-artifact@v1

@@ -83,7 +83,10 @@ jobs:
       run: sed -i 's/-SNAPSHOT//g' pom.xml
     
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      env:
+        DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
+      #run: mvn -B package --file pom.xml
+      run: mvn -B package -DdecryptionKey=$DECRYPTION_KEY -DskipMunitTests --file pom.xml
     
     - name: Stamp artifact file name with commit hash
       run: |
@@ -154,11 +157,13 @@ jobs:
          -Danypoint.password="$PASSWORD" \
          -Danypointplatformclientid="$ANYPOINT_PLATFORM_CLIENT_ID" \
          -Danypointplatformclientsecret="$ANYPOINT_PLATFORM_CLIENT_PASSWORD" \
+         -Denv=$ENVIRONMENT \
          -Ddeploymentenvironment=$ENVIRONMENT_CLOUDHUB \
          -Denvironment=$ENVIRONMENT_FOR_MULE_CONFIG \
          -DdecryptionKey="$DECRYPTION_KEY" \
          -Dapplicationname="$APPLICATION_NAME" \
-         -DskipTests
+         -DskipTests \
+         -DskipMunitTests
 
     # delete-artifact for now, our storage is limited
     - uses: geekyeggo/delete-artifact@v1
