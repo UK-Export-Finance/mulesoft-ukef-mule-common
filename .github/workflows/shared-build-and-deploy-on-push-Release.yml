@@ -27,6 +27,9 @@ on:
         required: true
       GH_PAT_FOR_READ_PACKAGES:
         required: true
+      GH_USER_FOR_READ_PACKAGES:
+        # User is not used at the moment, but please send it
+        required: false
       ANYPOINT_PLATFORM_USERNAME:
         required: true
       ANYPOINT_PLATFORM_PASSWORD:
