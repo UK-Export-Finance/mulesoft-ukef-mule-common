@@ -141,8 +141,8 @@ jobs:
     
     - name: Deploy to DEV
       env:
-        USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
-        PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}
+        CONNECTED_APP_DEPLOY_CLIENT_ID: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}
+        CONNECTED_APP_DEPLOY_CLIENT_SECRET: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}
         DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
@@ -153,8 +153,8 @@ jobs:
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \
          -Dmule.artifact=$artifactName \
-         -Danypoint.username="$USERNAME" \
-         -Danypoint.password="$PASSWORD" \
+         -DconnectedAppClientId="$CONNECTED_APP_DEPLOY_CLIENT_ID" \
+         -DconnectedAppClientSecret="$CONNECTED_APP_DEPLOY_CLIENT_SECRET" \
          -Danypointplatformclientid="$ANYPOINT_PLATFORM_CLIENT_ID" \
          -Danypointplatformclientsecret="$ANYPOINT_PLATFORM_CLIENT_PASSWORD" \
          -Denv=$ENVIRONMENT \
