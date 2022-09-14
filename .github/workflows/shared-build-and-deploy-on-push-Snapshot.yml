@@ -40,7 +40,10 @@ on:
         required: true
       ANYPOINT_PLATFORM_CLIENT_PASSWORD:
         required: true
-    
+      CONNECTED_APP_DEPLOY_CLIENT_ID:
+        required: true
+      CONNECTED_APP_DEPLOY_CLIENT_SECRET:
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
