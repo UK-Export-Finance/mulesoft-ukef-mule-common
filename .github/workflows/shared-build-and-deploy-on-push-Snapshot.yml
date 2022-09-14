@@ -31,9 +31,9 @@ on:
         # User is not used at the moment, but please send it
         required: false
       ANYPOINT_PLATFORM_USERNAME:
-        required: true
+        required: false
       ANYPOINT_PLATFORM_PASSWORD:
-        required: true
+        required: false
       DECRYPTION_KEY:
         required: true
       ANYPOINT_PLATFORM_CLIENT_ID:
@@ -74,8 +74,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
@@ -134,8 +134,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
