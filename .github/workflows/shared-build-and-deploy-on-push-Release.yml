@@ -31,14 +31,18 @@ on:
         # User is not used at the moment, but please send it
         required: false
       ANYPOINT_PLATFORM_USERNAME:
-        required: true
+        required: false
       ANYPOINT_PLATFORM_PASSWORD:
-        required: true
+        required: false
       DECRYPTION_KEY:
         required: true
       ANYPOINT_PLATFORM_CLIENT_ID:
         required: true
       ANYPOINT_PLATFORM_CLIENT_PASSWORD:
+        required: true
+      CONNECTED_APP_DEPLOY_CLIENT_ID:
+        required: true
+      CONNECTED_APP_DEPLOY_CLIENT_SECRET:
         required: true
     
 jobs:
@@ -71,8 +75,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
@@ -134,8 +138,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
@@ -144,8 +148,8 @@ jobs:
 
     - name: Deploy to QA,STG or PROD
       env:
-        USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
-        PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}
+        CONNECTED_APP_DEPLOY_CLIENT_ID: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}
+        CONNECTED_APP_DEPLOY_CLIENT_SECRET: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}
         DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
@@ -156,8 +160,8 @@ jobs:
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \
          -Dmule.artifact=$artifactName \
-         -Danypoint.username="$USERNAME" \
-         -Danypoint.password="$PASSWORD" \
+         -DconnectedAppClientId="$CONNECTED_APP_DEPLOY_CLIENT_ID" \
+         -DconnectedAppClientSecret="$CONNECTED_APP_DEPLOY_CLIENT_SECRET" \
          -Danypointplatformclientid="$ANYPOINT_PLATFORM_CLIENT_ID" \
          -Danypointplatformclientsecret="$ANYPOINT_PLATFORM_CLIENT_PASSWORD" \
          -Denv=$ENVIRONMENT \
