@@ -63,7 +63,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         # OLD version java-version: 1.8
-        java-version: '17'
+        java-version: '8'
         distribution: adopt
     
     - name: Add repo credentials
