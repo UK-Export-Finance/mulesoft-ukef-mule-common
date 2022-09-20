@@ -31,25 +31,28 @@ on:
         # User is not used at the moment, but please send it
         required: false
       ANYPOINT_PLATFORM_USERNAME:
-        required: true
+        required: false
       ANYPOINT_PLATFORM_PASSWORD:
-        required: true
+        required: false
       DECRYPTION_KEY:
         required: true
       ANYPOINT_PLATFORM_CLIENT_ID:
         required: true
       ANYPOINT_PLATFORM_CLIENT_PASSWORD:
         required: true
-    
+      CONNECTED_APP_DEPLOY_CLIENT_ID:
+        required: true
+      CONNECTED_APP_DEPLOY_CLIENT_SECRET:
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
     
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
-    - uses: actions/cache@v1
+    - uses: actions/cache@v3
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -57,7 +60,7 @@ jobs:
           ${{ runner.os }}-maven-
     
     - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3
       with:
         java-version: 1.8
     
@@ -71,8 +74,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "~~~Client~~~",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}~?~${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
@@ -95,7 +98,7 @@ jobs:
         artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/-$commitHash.jar/g")
         mv $artifactName1 $artifactName2
     
-    - name: Upload artifact 
+    - name: Upload artifact
       uses: actions/upload-artifact@master
       with:
           name: artifacts
@@ -108,9 +111,9 @@ jobs:
 
     steps:
     
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
-    - uses: actions/cache@v1
+    - uses: actions/cache@v3
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -131,8 +134,8 @@ jobs:
            "password": "${{ secrets.MULE_NEXUS_PASSWORD }}"
           },{
            "id": "anypoint-exchange-v3",
-           "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-           "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+           "username": "~~~Client~~~",
+           "password": "${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}~?~${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}"
           },{
            "id": "github-mulesoft-ukef-mule-common",
            "username": "avaitonis",
@@ -141,8 +144,8 @@ jobs:
     
     - name: Deploy to DEV
       env:
-        USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
-        PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}
+        CONNECTED_APP_DEPLOY_CLIENT_ID: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_ID }}
+        CONNECTED_APP_DEPLOY_CLIENT_SECRET: ${{ secrets.CONNECTED_APP_DEPLOY_CLIENT_SECRET }}
         DECRYPTION_KEY: ${{ secrets.DECRYPTION_KEY }}
         ANYPOINT_PLATFORM_CLIENT_ID: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_ID }}
         ANYPOINT_PLATFORM_CLIENT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_CLIENT_PASSWORD }}
@@ -153,8 +156,8 @@ jobs:
         artifactName=$(ls *.jar | head -1)
         mvn deploy -DmuleDeploy \
          -Dmule.artifact=$artifactName \
-         -Danypoint.username="$USERNAME" \
-         -Danypoint.password="$PASSWORD" \
+         -DconnectedAppClientId="$CONNECTED_APP_DEPLOY_CLIENT_ID" \
+         -DconnectedAppClientSecret="$CONNECTED_APP_DEPLOY_CLIENT_SECRET" \
          -Danypointplatformclientid="$ANYPOINT_PLATFORM_CLIENT_ID" \
          -Danypointplatformclientsecret="$ANYPOINT_PLATFORM_CLIENT_PASSWORD" \
          -Denv=$ENVIRONMENT \
@@ -165,7 +168,3 @@ jobs:
          -DskipTests \
          -DskipMunitTests
     
-    # delete-artifact for now, our storage is limited
-    #- uses: geekyeggo/delete-artifact@v1
-    #  with:
-    #    name: artifacts
